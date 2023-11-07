@@ -1,3 +1,7 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": [
+    "next/core-web-vitals",
+    "eslint-config-next",
+    "plugin:prettier/recommended" //se queja en la build
+  ]
 }
