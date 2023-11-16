@@ -13,7 +13,7 @@ export async function POST(req: any, res: any) {
     `${process.env.CONTAINER_NAME}`,
   );
   const blockBlobClient = containerClient.getBlockBlobClient(name);
-
+  const { url } = blockBlobClient;
   try {
     // Upload the file to Azure Blob Storage
     await blockBlobClient.uploadData(data);
@@ -21,5 +21,6 @@ export async function POST(req: any, res: any) {
     throw new Error(`Error uploading file: ${error}`);
   }
 
-  return Response.json(res);
+  console.log(url);
+  return Response.json({ name, type, url });
 }

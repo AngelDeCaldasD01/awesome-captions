@@ -1,13 +1,15 @@
 'use client';
+import { transcribirArchivoDeBlobStorage } from '@/hooks/SpeechRecognizerService';
 import axios from 'axios';
 import { useEffect } from 'react';
 
 export default function FilePage({ params }: any) {
   const filename = params.filename;
 
-  useEffect(() => {
-    axios.get(`/api/transcribe?filename=${filename}`);
-  }, [filename]);
+  // useEffect(() => {
+  //   axios.get(`/api/transcribe?filename=${filename}`);
+  //   transcribirArchivoDeBlobStorage(filename);
+  // }, [filename]);
 
   return (
     <div>
