@@ -7,6 +7,7 @@ import LoadingIcon from './icons/LoadingIcon';
 import { transcribeFileFromBlobStorage } from '@/hooks/SpeechRecognizerService';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { transcode } from '@/hooks/Transcode';
 
 export default function UploadForm() {
   const [isUploading, setIsUploading] = useState(false);
@@ -15,52 +16,46 @@ export default function UploadForm() {
   const randomUUID = crypto.randomUUID();
   const router = useRouter();
 
-  // probar de ejecutar esto en servidor
-  const ffmpegRef = useRef(new FFmpeg());
+  // // probar de ejecutar esto en servidor
+  // const ffmpegRef = useRef(new FFmpeg());
 
-  const transcode = async (url: string) => {
-    if (!selectedFile) {
-      alert('Selecciona un archivo MP4 primero.');
-      return;
-    }
-    console.log(url);
+  // const transcode = async (url: string) => {
+  //   if (!selectedFile) {
+  //     alert('Selecciona un archivo MP4 primero.');
+  //     return;
+  //   }
 
-    const ffmpeg = ffmpegRef.current;
-    console.log(url);
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
+  //   const ffmpeg = ffmpegRef.current;
+  //   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
 
-    if (!ffmpeg.loaded) {
-      await ffmpeg.load({
-        coreURL: await toBlobURL(
-          `${baseURL}/ffmpeg-core.js`,
-          'text/javascript',
-        ),
-        wasmURL: await toBlobURL(
-          `${baseURL}/ffmpeg-core.wasm`,
-          'application/wasm',
-        ),
-      });
-    }
-    console.log(url);
+  //   if (!ffmpeg.loaded) {
+  //     await ffmpeg.load({
+  //       coreURL: await toBlobURL(
+  //         `${baseURL}/ffmpeg-core.js`,
+  //         'text/javascript',
+  //       ),
+  //       wasmURL: await toBlobURL(
+  //         `${baseURL}/ffmpeg-core.wasm`,
+  //         'application/wasm',
+  //       ),
+  //     });
+  //   }
 
-    await ffmpeg.writeFile(selectedFile.name, await fetchFile(url));
-    console.log(url);
+  //   await ffmpeg.writeFile(selectedFile.name, await fetchFile(url));
 
-    await ffmpeg.exec([
-      '-i',
-      selectedFile.name,
-      '-ac',
-      '1',
-      '-ar',
-      '16000',
-      'output.wav',
-    ]);
-    const data = await ffmpeg.readFile('output.wav');
-    // audioRef.current.src = URL.createObjectURL(
-    //   new Blob([data.buffer], { type: 'audio/wav' }),
-    // );
-    return data;
-  };
+  //   await ffmpeg.exec([
+  //     '-i',
+  //     selectedFile.name,
+  //     '-ac',
+  //     '1',
+  //     '-ar',
+  //     '16000',
+  //     'output.wav',
+  //   ]);
+  //   const data = await ffmpeg.readFile('output.wav');
+
+  //   return data;
+  // };
   async function handleUpload(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     if (selectedFile) {
@@ -79,12 +74,9 @@ export default function UploadForm() {
       //   .then(() => {
       //     router.push(`/${selectedFile.name}`);
       //   });
-      console.log(result.data.url);
-      const result2 = await transcode(result.data.url);
-      console.log(result2);
-      transcribeFileFromBlobStorage(result2).then(() => {
-        // router.push(`/${selectedFile.name}`);
-      });
+      // transcribeFileFromBlobStorage(result2).then(() => {
+      router.push(`/${selectedFile.name}`);
+      // });
     }
   }
 
