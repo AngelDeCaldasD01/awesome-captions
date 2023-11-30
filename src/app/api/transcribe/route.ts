@@ -4,58 +4,57 @@ import {
   SpeechConfig,
   SpeechRecognizer,
 } from 'microsoft-cognitiveservices-speech-sdk';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: any) {
-  // const url = new URL(req.url);
-  // const searchParams = new URLSearchParams(url.searchParams);
-  // const filename = searchParams.get('filename');
+export async function POST(req: any) {
+  try {
+    const formData = await req.formData();
 
-  const formData = await req.formData();
-  const file = formData.get('selectedFile');
-  const { name, type } = file;
-  const data = await file.arrayBuffer();
+    const file = formData.get('resultTranscode');
 
-  const speechConfig = SpeechConfig.fromSubscription(
-    '66b27f1e78324b7c88651d26e565dc55',
-    'eastus',
-  );
-  speechConfig.speechRecognitionLanguage = 'es-ES';
+    const dataFile = await file.arrayBuffer();
+    const buffer = Buffer.from(dataFile);
 
-  const audioConfig = AudioConfig.fromWavFileInput(data);
-  const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
-  console.log(recognizer);
+    const speechConfig = SpeechConfig.fromSubscription(
+      'ae9c47559da84efaa85869e8b0d8a68e',
+      'eastus',
+    );
+    speechConfig.speechRecognitionLanguage = 'es-ES';
 
-  recognizer.recognizeOnceAsync((result) => {
-    if (result.reason === ResultReason.RecognizedSpeech) {
-      const resultText = result.text;
+    const audioConfig = AudioConfig.fromWavFileInput(buffer);
+    const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
-      // Dividir la transcripción en palabras por espacios
-      const palabras = resultText.split(' ');
+    const c = await new Promise((resolve, reject) => {
+      recognizer.recognizeOnceAsync((result) => {
+        let palabrasConMarcasDeTiempo;
+        if (result.reason === ResultReason.RecognizedSpeech) {
+          const resultText = result.text;
+          // Dividir la transcripción en palabras por espacios
+          const palabras = resultText.split(' ');
 
-      // Calcular marcas de tiempo
-      const duracionTotal = result.duration / 10000000; // Duración total en segundos
+          // Calcular marcas de tiempo
+          const duracionTotal = result.duration / 10000000; // Duración total en segundos
 
-      const palabrasConMarcasDeTiempo = palabras.map((palabra, index) => {
-        const inicio = (index / palabras.length) * duracionTotal;
-        const fin = ((index + 1) / palabras.length) * duracionTotal;
+          palabrasConMarcasDeTiempo = palabras.map((palabra, index) => {
+            const inicio = (index / palabras.length) * duracionTotal;
+            const fin = ((index + 1) / palabras.length) * duracionTotal;
 
-        return {
-          palabra,
-          inicio,
-          fin,
-        };
+            return {
+              palabra,
+              inicio,
+              fin,
+            };
+          });
+
+          resolve(palabrasConMarcasDeTiempo);
+        } else {
+          reject('No se reconoció el discurso');
+        }
       });
-
-      // Mostrar las marcas de tiempo
-      palabrasConMarcasDeTiempo.forEach((palabraConMarcaDeTiempo) => {
-        console.log(
-          `Palabra: ${palabraConMarcaDeTiempo.palabra}, Inicio: ${palabraConMarcaDeTiempo.inicio} segundos, Fin: ${palabraConMarcaDeTiempo.fin} segundos`,
-        );
-      });
-    } else {
-      console.error(`Error de transcripción: ${result.reason}`);
-    }
-  });
-
-  return Response.json('ok');
+    });
+    return Response.json({ c });
+  } catch (error) {
+    console.error('Error al procesar la solicitud:', error);
+    return Response.error();
+  }
 }

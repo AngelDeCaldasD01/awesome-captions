@@ -2,8 +2,10 @@ import { BlobServiceClient } from '@azure/storage-blob';
 
 export async function POST(req: any, res: any) {
   const formData = await req.formData();
+  console.log(formData);
   const file = formData.get('selectedFile');
   const { name, type } = file;
+
   const data = await file.arrayBuffer();
 
   const blobServiceClient = new BlobServiceClient(
@@ -21,6 +23,5 @@ export async function POST(req: any, res: any) {
     throw new Error(`Error uploading file: ${error}`);
   }
 
-  console.log(url);
   return Response.json({ name, type, url });
 }

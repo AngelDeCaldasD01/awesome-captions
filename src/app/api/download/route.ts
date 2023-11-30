@@ -25,5 +25,6 @@ export async function GET(req: any) {
 
   return Response.json({
     file: blockBlobDownload,
+    url: blockBlobClient.url,
   });
 }

@@ -14,7 +14,7 @@ import { BlobServiceClient } from '@azure/storage-blob';
 // );
 
 const speechConfig = SpeechConfig.fromSubscription(
-  '66b27f1e78324b7c88651d26e565dc55',
+  'ae9c47559da84efaa85869e8b0d8a68e',
   'eastus',
 );
 speechConfig.speechRecognitionLanguage = 'es-ES';
@@ -31,6 +31,8 @@ async function descargarArchivoDesdeBlobStorage(nombreArchivo: any) {
   return blobClient;
 }
 async function transcribeAudio(file: any) {
+  console.log(speechConfig);
+  console.log(file);
   const audioConfig = AudioConfig.fromWavFileInput(file);
   const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
   speechConfig.speechRecognitionLanguage = 'es-ES';
