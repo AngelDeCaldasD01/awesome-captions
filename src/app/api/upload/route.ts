@@ -2,7 +2,7 @@ import { BlobServiceClient } from '@azure/storage-blob';
 
 export async function POST(req: any, res: any) {
   const formData = await req.formData();
-  console.log(formData);
+
   const file = formData.get('selectedFile');
   const { name, type } = file;
 

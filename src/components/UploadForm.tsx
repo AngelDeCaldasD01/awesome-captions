@@ -4,10 +4,6 @@ import UploadUpIcon from './icons/UploadUpIcon';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import LoadingIcon from './icons/LoadingIcon';
-import { transcribeFileFromBlobStorage } from '@/hooks/SpeechRecognizerService';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import { transcode } from '@/hooks/Transcode';
 
 export default function UploadForm() {
   const [isUploading, setIsUploading] = useState(false);
@@ -16,68 +12,16 @@ export default function UploadForm() {
   const randomUUID = crypto.randomUUID();
   const router = useRouter();
 
-  // // probar de ejecutar esto en servidor
-  // const ffmpegRef = useRef(new FFmpeg());
-
-  // const transcode = async (url: string) => {
-  //   if (!selectedFile) {
-  //     alert('Selecciona un archivo MP4 primero.');
-  //     return;
-  //   }
-
-  //   const ffmpeg = ffmpegRef.current;
-  //   const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.2/dist/umd';
-
-  //   if (!ffmpeg.loaded) {
-  //     await ffmpeg.load({
-  //       coreURL: await toBlobURL(
-  //         `${baseURL}/ffmpeg-core.js`,
-  //         'text/javascript',
-  //       ),
-  //       wasmURL: await toBlobURL(
-  //         `${baseURL}/ffmpeg-core.wasm`,
-  //         'application/wasm',
-  //       ),
-  //     });
-  //   }
-
-  //   await ffmpeg.writeFile(selectedFile.name, await fetchFile(url));
-
-  //   await ffmpeg.exec([
-  //     '-i',
-  //     selectedFile.name,
-  //     '-ac',
-  //     '1',
-  //     '-ar',
-  //     '16000',
-  //     'output.wav',
-  //   ]);
-  //   const data = await ffmpeg.readFile('output.wav');
-
-  //   return data;
-  // };
   async function handleUpload(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     if (selectedFile) {
       setIsUploading(true);
 
-      const result = await axios.postForm('/api/upload', { selectedFile });
+      await axios.postForm('/api/upload', { selectedFile });
 
-      console.log(result);
       setIsUploading(false);
 
-      // router.push(`/${selectedFile.name}`);
-
-      // await axios
-      //   .postForm(`/api/transcribe?filename=${selectedFile.name}`, {
-      //     selectedFile,
-      //   })
-      //   .then(() => {
-      //     router.push(`/${selectedFile.name}`);
-      //   });
-      // transcribeFileFromBlobStorage(result2).then(() => {
       router.push(`/${selectedFile.name}`);
-      // });
     }
   }
 
@@ -88,7 +32,7 @@ export default function UploadForm() {
         [e.target.files[0]],
         `${randomUUID}.${typeSplit}`,
       );
-      if (typeSplit !== 'mp4') return alert('Selecciona un archivo mp4 válido');
+      if (typeSplit !== 'mp4') return alert('Select a valid mp4 file');
       setSelectedFile(modifiedFile);
     }
   };
