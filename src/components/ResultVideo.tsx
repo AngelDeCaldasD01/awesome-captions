@@ -1,25 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import SparklesIcon from './icons/SparklesIcon';
+import SparklesIcon from '@/components/icons/SparklesIcon';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import { TimeStamp } from '@/models/Timestamp';
+import { Timestamp } from '@/models/Timestamp';
+import { formatTranscriptionItemsToSrt } from '@/libs/TranscriptionHelpers';
+import { RobotoBold, RobotoRegular } from '@/fonts/FontImports';
+import { toFFmpegColor } from '@/libs/FFmpegHelpers';
 
 interface ResultVideoProps {
   filename: string;
-  transcriptionData: TimeStamp[];
+  transcriptionData: Timestamp[];
 }
 
 export default function ResultVideo({
   filename,
   transcriptionData,
 }: ResultVideoProps) {
-  const videoUrl = `https://awesomecaptionsblob.blob.core.windows.net/awesomecaptionsblobcontainer/${filename}`;
-  const [loaded, setLoaded] = useState(false);
-  const ffmpegRef = useRef(new FFmpeg());
+  const videoUrl: string = `https://awesomecaptionsblob.blob.core.windows.net/awesomecaptionsblobcontainer/${filename}`;
+  const [loaded, setLoaded] = useState<boolean>(false);
+  const ffmpegRef = useRef<FFmpeg>(new FFmpeg());
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  const [primaryColour, setPrimaryColour] = useState<string>('#FFFFFF');
+  const [outlineColour, setOutlineColour] = useState<string>('#000000');
+
   useEffect(() => {
-    if (videoRef.current) videoRef.current.src = videoUrl;
     load();
   }, []);
 
@@ -34,20 +39,45 @@ export default function ResultVideo({
         'application/wasm',
       ),
     });
+    await ffmpeg.writeFile('/tmp/roboto.ttf', await fetchFile(RobotoRegular));
+    await ffmpeg.writeFile('/tmp/roboto-bold.ttf', await fetchFile(RobotoBold));
+
     setLoaded(true);
   };
 
   const transcode = async () => {
     const ffmpeg = ffmpegRef.current;
+    const srtTranscription = formatTranscriptionItemsToSrt(transcriptionData);
+
     await ffmpeg.writeFile(filename, await fetchFile(videoUrl));
+    await ffmpeg.writeFile('subs.srt', srtTranscription);
+
+    if (videoRef.current) videoRef.current.src = videoUrl;
+    await new Promise((resolve) => {
+      if (videoRef.current) videoRef.current.onloadedmetadata = resolve;
+    });
+
     ffmpeg.on('log', ({ message }) => {
       console.log(message);
     });
-    await ffmpeg.exec(['-i', filename, 'output.mp4']);
+
+    await ffmpeg.exec([
+      '-i',
+      filename,
+      '-preset',
+      'ultrafast',
+      //   '-to',
+      //   '00:00:05',
+      '-vf',
+      `subtitles=subs.srt:fontsdir=/tmp:force_style='Fontname=Roboto,FontSize=30,MarginV=100,PrimaryColour=${toFFmpegColor(
+        primaryColour,
+      )},OutlineColour=${toFFmpegColor(outlineColour)}'`,
+      'output.mp4',
+    ]);
     const data = await ffmpeg.readFile('output.mp4');
     if (videoRef.current)
       videoRef.current.src = URL.createObjectURL(
-        new Blob([data.buffer], { type: 'video/mp4' }),
+        new Blob([data], { type: 'video/mp4' }),
       );
   };
 
@@ -62,6 +92,21 @@ export default function ResultVideo({
           <span>Apply captions</span>
         </button>
       </div>
+      <fieldset>
+        <label>Primary colour</label>
+        <input
+          type='color'
+          value={primaryColour}
+          onChange={(e) => setPrimaryColour(e.target.value)}
+        />
+        <br />
+        <label>Outline colour</label>
+        <input
+          type='color'
+          value={outlineColour}
+          onChange={(e) => setOutlineColour(e.target.value)}
+        />
+      </fieldset>
       <div className='rounded-xl overflow-hidden'>
         <video ref={videoRef} controls data-video={0} />
       </div>

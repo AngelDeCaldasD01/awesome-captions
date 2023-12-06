@@ -1,5 +1,4 @@
-import { formatTranscriptionItem } from '@/libs/TranscriptionHelpers';
-import { Timestamp } from '@/models/Timestamp';
+import { formatTranscriptionItems } from '@/libs/TranscriptionHelpers';
 import {
   AudioConfig,
   ResultReason,
@@ -28,9 +27,7 @@ export async function POST(req: any) {
     const fileRecognized = await new Promise((resolve, reject) => {
       recognizer.recognizeOnceAsync((result) => {
         if (result.reason === ResultReason.RecognizedSpeech) {
-          const wordsWithTimestamps: Timestamp[] =
-            formatTranscriptionItem(result);
-          resolve(wordsWithTimestamps);
+          resolve(formatTranscriptionItems(result));
         } else {
           reject('The speech was not recognized');
         }
