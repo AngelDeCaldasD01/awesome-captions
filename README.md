@@ -1,23 +1,36 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Upload file in Azure Blob
 
-## Getting Started
-
-First, run the development server:
+There are different ways to upload a file, this way you have to generate a sas token manually:
 
 ```bash
-pnpm dev
+  const blobServiceClient = new BlobServiceClient(
+    `https://${process.env.ACCOUNT_STORAGE_NAME}.blob.core.windows.net?${process.env.SAS_TOKEN}`,
+  );
+  const containerClient = blobServiceClient.getContainerClient(
+    `${process.env.CONTAINER_NAME}`,
+  );
+  const blockBlobClient = containerClient.getBlockBlobClient(name);
+  const { url } = blockBlobClient;
+
+  await blockBlobClient.uploadData(data);
 ```
 
-{
-"printWidth": 80, // Ancho máximo de línea
-"tabWidth": 2, // Tamaño de tabulación
-"useTabs": false, // Utilizar espacios en lugar de tabulaciones
-"semi": true, // Agregar punto y coma al final de las sentencias
-"singleQuote": true, // Utilizar comillas simples en lugar de dobles
-"jsxSingleQuote": true, // Utilizar comillas simples en el JSX
-"trailingComma": "all", // Agregar comas finales en arrays y objetos
-"bracketSpacing": true, // Espacios alrededor de los corchetes en objetos
-"arrowParens": "always" // Incluir paréntesis alrededor de los argumentos de funciones flecha
-}
+## Read file in Azure Blob
 
-// Las variables de entorno no se comunican bien cuando un componente está en modo cliente, es decir cuando has utilizado 'use client'
+```bash
+  const blobServiceClient = new BlobServiceClient(
+    `https://${process.env.ACCOUNT_STORAGE_NAME}.blob.core.windows.net?${process.env.SAS_TOKEN}`,
+  );
+
+  const containerClient = blobServiceClient.getContainerClient(
+    `${process.env.CONTAINER_NAME}`,
+  );
+
+  const blockBlobClient = containerClient.getBlockBlobClient(`${filename}`);
+
+  const blockBlobDownload = await blockBlobClient.downloadToBuffer();
+```
+
+## Tips
+
+- Environment **variables** do not communicate well when a component is in client mode, that is, when you have used.

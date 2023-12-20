@@ -16,3 +16,28 @@ input[type='color'] {
   appearance: none;
   background-color: transparent;
 }
+
+select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+select:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+select::-ms-expand {
+  display: none;
+}
+option:focus {
+  background-color: red;
+}
+option:hover {
+  background-color: red;
+}

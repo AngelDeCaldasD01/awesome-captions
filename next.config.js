@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
+const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
+
+// Establece la ruta del binario de FFmpeg
+ffmpeg.setFfmpegPath(require('@ffmpeg-installer/ffmpeg').path);
 
 const nextConfig = {
   webpack(config) {
